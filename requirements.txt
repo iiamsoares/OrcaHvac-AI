@@ -1,0 +1,8 @@
+google-generativeai
+supabase
+streamlit
+pymupdf
+pdf2image
+pillow
+python-dotenv
+sentence-transformers
