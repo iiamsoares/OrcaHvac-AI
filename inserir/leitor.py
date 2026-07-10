@@ -1,5 +1,6 @@
 import os
 import io
+# pyrefly: ignore [missing-import]
 import fitz  # PyMuPDF
 from PIL import Image
 import google.generativeai as genai
@@ -46,7 +47,7 @@ def extrair_texto_da_pagina(caminho_pdf, numero_pagina, forçar_ocr=False, permi
         imagem = Image.open(io.BytesIO(imagem_bytes))
         
         # Configurar o modelo multimodal do Gemini Lite
-        modelo = genai.GenerativeModel("gemini-2.5-flash")
+        modelo = genai.GenerativeModel("gemini-3.1-flash-lite")
         
         prompt = (
             "Você é um leitor óptico e processador de documentos profissional. "
@@ -59,7 +60,7 @@ def extrair_texto_da_pagina(caminho_pdf, numero_pagina, forçar_ocr=False, permi
             "5. Não faça introduções, resumos ou explicações adicionais. Retorne apenas a transcrição do conteúdo da página."
         )
         
-        # Chamar a API do Gemini enviando a imagem e o prompt com retentativa em caso de 429
+        # Chamar a API do Gemini enviando a imagem e o prompt com retentativa robusta para qualquer erro temporário (429, 500, rede, etc)
         tentativas = 5
         espera = 6
         resposta = None
@@ -68,18 +69,43 @@ def extrair_texto_da_pagina(caminho_pdf, numero_pagina, forçar_ocr=False, permi
                 resposta = modelo.generate_content([prompt, imagem])
                 break
             except Exception as api_err:
-                if "429" in str(api_err) or "Quota exceeded" in str(api_err) or "RESOURCE_EXHAUSTED" in str(api_err):
-                    print(f"  [AVISO API] Limite de requisições atingido. Esperando {espera}s (Tentativa {tentativa + 1}/{tentativas})...")
-                    import time
-                    time.sleep(espera)
-                    espera *= 2
-                else:
+                if tentativa == tentativas - 1:
+                    # Se for a última tentativa, propaga o erro
                     raise api_err
+                print(f"  [AVISO API] Erro na chamada (Tentativa {tentativa + 1}/{tentativas}): {str(api_err)}. Esperando {espera}s para tentar novamente...")
+                import time
+                time.sleep(espera)
+                espera *= 2
         
         if not resposta:
             raise Exception("Falha após várias tentativas de chamada à API do Gemini devido a limites de cota.")
             
-        texto_ocr = resposta.text
+        try:
+            texto_ocr = resposta.text
+        except Exception as text_err:
+            candidatos = getattr(resposta, "candidates", [])
+            finish_reason = 0
+            if candidatos:
+                # O finish_reason pode ser int ou objeto com atributo value
+                fr_obj = getattr(candidatos[0], "finish_reason", 0)
+                if hasattr(fr_obj, "value"):
+                    finish_reason = fr_obj.value
+                else:
+                    try:
+                        finish_reason = int(fr_obj)
+                    except:
+                        finish_reason = 0
+            
+            # 3 = SAFETY, 4 = RECITATION
+            if finish_reason == 4:
+                print(f"  [AVISO OCR] Página {numero_pagina + 1} de {os.path.basename(caminho_pdf)} bloqueada por filtro de direitos autorais (RECITATION). Retornando placeholder.")
+                return f"[Conteúdo da página {numero_pagina + 1} indisponível devido a restrição de direitos autorais no OCR do Gemini]", True
+            elif finish_reason == 3:
+                print(f"  [AVISO OCR] Página {numero_pagina + 1} de {os.path.basename(caminho_pdf)} bloqueada por filtro de segurança (SAFETY). Retornando placeholder.")
+                return f"[Conteúdo da página {numero_pagina + 1} indisponível devido a filtro de segurança no OCR do Gemini]", True
+            else:
+                raise text_err
+            
         if texto_ocr:
             print(f"[{os.path.basename(caminho_pdf)} - Pág. {numero_pagina + 1}] OCR concluído com sucesso.")
             return texto_ocr.strip(), True

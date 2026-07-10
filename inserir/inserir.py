@@ -49,14 +49,14 @@ def obter_embedding(texto):
         print(f"  [ERRO] Falha ao gerar embedding local: {str(e)}")
         return None
 
-def obter_paginas_indexadas(nome_arquivo):
+def obter_paginas_indexadas(caminho_arquivo):
     """
-    Retorna o conjunto de páginas já indexadas no Supabase para o arquivo.
+    Retorna o conjunto de páginas já indexadas no Supabase para o arquivo com base no seu caminho relativo.
     """
     if not supabase:
         return set()
     try:
-        resposta = supabase.table("documentos_catalogos_local").select("pagina").eq("nome_arquivo", nome_arquivo).execute()
+        resposta = supabase.table("documentos_catalogos_local").select("pagina").eq("caminho_arquivo", caminho_arquivo).execute()
         return set([d['pagina'] for d in resposta.data]) if resposta.data else set()
     except Exception as e:
         print(f"Erro ao verificar páginas indexadas no Supabase: {str(e)}")
@@ -74,8 +74,8 @@ def indexar_catalogo(caminho_pdf, diretorio_base):
         total_paginas = len(doc)
         doc.close()
         
-        # Verificar quais páginas já estão indexadas
-        paginas_indexadas = obter_paginas_indexadas(nome_arquivo)
+        # Verificar quais páginas já estão indexadas pelo caminho relativo
+        paginas_indexadas = obter_paginas_indexadas(caminho_relativo)
         
         if len(paginas_indexadas) == total_paginas:
             print(f"-> Arquivo 100% indexado anteriormente (Ignorando): {caminho_relativo}")
@@ -128,7 +128,7 @@ def indexar_catalogo(caminho_pdf, diretorio_base):
             
             # Pequeno intervalo se rodou OCR para respeitar o limite da API Gemini gratuita
             if ocr_realizado:
-                time.sleep(12.0)
+                time.sleep(5.0)
             else:
                 time.sleep(0.01)
             

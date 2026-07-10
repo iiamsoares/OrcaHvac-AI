@@ -80,7 +80,7 @@ st.markdown("""
 
 # --- SIDEBAR / PAINEL LATERAL ---
 with st.sidebar:
-    st.image(r"C:\Users\Tecnologia\OneDrive - GRUPO RETEC (1)\02. Engenharia\Dep. Orçamentos\CADASTRO ORÇAMENTO RETEC\CORE\imagens\LOGO RETEC-Photoroom.png", width=100)
+    st.image(r"C:\Users\Tecnologia\Agente - Setor Orçamentos\catalogoIA\imagens\LOGO RETEC-Photoroom.png", width=100)
     st.title("Configurações")
     
     st.markdown("---")

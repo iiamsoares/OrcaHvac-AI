@@ -1,6 +1,6 @@
-# catalogoIA - Assistente Inteligente para Orçamentos HVAC 🚀
+# OrcaHvac AI - Assistente Inteligente para Consulta de Catálogos Técnicos HVAC (Setor Orçamentos) 🚀
 
-O **catalogoIA** é um assistente técnico virtual especializado no setor de orçamentos de HVAC (Climatização, Ventilação e Aquecimento), desenvolvido para a equipe do **Grupo Retec**. Ele utiliza técnicas modernas de **RAG (Retrieval-Augmented Generation)**, banco de dados vetorial e inteligência artificial para extrair, indexar e buscar dados técnicos de forma ultra-precisa em catálogos das marcas **Armacell**, **Daikin** e **TROX** (incluindo PDFs nativos e imagens digitalizadas/escaneadas).
+O **OrcaHvac AI** é um assistente técnico virtual especializado no setor de orçamentos de HVAC (Climatização, Ventilação e Aquecimento), desenvolvido para a equipe do **Grupo Retec**. Ele utiliza técnicas modernas de **RAG (Retrieval-Augmented Generation)**, banco de dados vetorial e inteligência artificial para extrair, indexar e buscar dados técnicos de forma ultra-precisa em catálogos das marcas **Armacell**, **Daikin** e **TROX** (incluindo PDFs nativos e imagens digitalizadas/escaneadas).
 
 ---
 
